@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Reflection;
@@ -8,6 +8,7 @@ public class DogeTools : EditorWindow
     AnimationClip my_variable;
     string tmp;
     DefaultAsset my_file;
+    GameObject Parent;
 
   
 
@@ -37,6 +38,13 @@ public class DogeTools : EditorWindow
         if (GUILayout.Button("Do the thing"))
         {
             Copy_move();
+        }
+        GUILayout.Label("Normalize and set anchors", EditorStyles.boldLabel);
+        Parent = EditorGUILayout.ObjectField("Parent", Parent, typeof(GameObject), true) as GameObject;
+
+        if (GUILayout.Button("Do the thing"))
+        {
+            print_children();
         }
     }
     void Copy(string sourceDir, string targetDir, string folder_name)
@@ -104,5 +112,73 @@ public class DogeTools : EditorWindow
         outfile.Close();
         infile.Close();
         AssetDatabase.Refresh();
+    }
+    void print_children()
+    {
+        float tempXcenter;
+        float tempYcenter;
+        float tempZcenter;
+        float tempXextent;
+        float tempYextent;
+        float tempZextent;
+        float greatestX = 0;
+        float greatestY = 0;
+        float greatestZ = 0;
+
+        foreach (Transform Child in Parent.transform)
+        {
+            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+            {
+                tempXcenter = Math.Abs(Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.center.x);
+                tempYcenter = Math.Abs(Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.center.y);
+                tempZcenter = Math.Abs(Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.center.z);
+                tempXextent = Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.extents.x;
+                tempYextent = Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.extents.y;
+                tempZextent = Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.extents.z;
+              
+                tempXextent = (tempXcenter + tempXextent) * 2;
+                tempYextent = (tempYcenter + tempYextent) * 2;
+                tempZextent = (tempZcenter + tempZextent) * 2;
+
+                if (tempXextent > greatestX) greatestX = tempXextent;
+                if (tempYextent > greatestY) greatestY = tempYextent;
+                if (tempZextent > greatestZ) greatestZ = tempZextent;
+
+
+
+                Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds = new Bounds(new Vector3(0, 0, 0), new Vector3 (tempXextent, tempYextent, tempZextent));
+                Debug.Log(Child.name);
+            }
+        }
+
+        foreach (Transform Child in Parent.transform)
+        {
+            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+            {
+                Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds = new Bounds(new Vector3(0, 0, 0), new Vector3(greatestX, greatestY, greatestZ));
+                Debug.Log(Child.name);
+            }
+        }
+        Transform Hips = Parent.transform;
+        foreach (Transform Child in Parent.transform)
+        {
+            if (Child.name == "Armature")
+            {
+                foreach (Transform subChild in Child.transform)
+                {
+                    if (subChild.name == "Hips")
+                    {
+                        Hips = subChild;
+                        break;
+                    }
+                        
+                }
+                
+            }
+            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+            {
+                Child.gameObject.GetComponent<SkinnedMeshRenderer>().probeAnchor = Hips;
+            }
+        }
     }
 }
