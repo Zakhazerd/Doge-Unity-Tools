@@ -9,6 +9,7 @@ public class DogeTools : EditorWindow
     string tmp;
     DefaultAsset my_file;
     GameObject Parent;
+    Transform Anchor;
 
   
 
@@ -19,15 +20,15 @@ public class DogeTools : EditorWindow
     }
     private void OnGUI()
     {
-        GUILayout.Label("Append time :)", EditorStyles.boldLabel);
-        tmp = EditorGUILayout.TextField("New Hierchy", tmp);
-        my_variable = EditorGUILayout.ObjectField("Animation", my_variable, typeof(AnimationClip), false) as AnimationClip;
+        GUILayout.Label("Append to animation herichy", EditorStyles.boldLabel);
+        tmp = EditorGUILayout.TextField("Hierchy string to append", tmp);
+        my_variable = EditorGUILayout.ObjectField("Animation clip", my_variable, typeof(AnimationClip), false) as AnimationClip;
 
-        if (GUILayout.Button("Do the thing"))
+        if (GUILayout.Button("Append"))
         {
             Reheirchy();
         }
-        GUILayout.Label("Copy all from folder", EditorStyles.boldLabel);
+        GUILayout.Label("Copy all from folder to current open in project", EditorStyles.boldLabel);
         my_file = (DefaultAsset)EditorGUILayout.ObjectField("Folder", my_file, typeof(DefaultAsset), false);
         if (my_file != null) { 
         if (my_file.name == "Assets")
@@ -35,16 +36,17 @@ public class DogeTools : EditorWindow
             EditorGUILayout.HelpBox("Bruh just don't", MessageType.Warning, true);
         }
     }
-        if (GUILayout.Button("Do the thing"))
+        if (GUILayout.Button("Copy"))
         {
             Copy_move();
         }
         GUILayout.Label("Normalize and set anchors", EditorStyles.boldLabel);
-        Parent = EditorGUILayout.ObjectField("Parent", Parent, typeof(GameObject), true) as GameObject;
+        Anchor = EditorGUILayout.ObjectField("Anchor", Anchor, typeof(Transform), true) as Transform;
+        Parent = EditorGUILayout.ObjectField("Avatar", Parent, typeof(GameObject), true) as GameObject;
 
-        if (GUILayout.Button("Do the thing"))
+        if (GUILayout.Button("Fix skinned meshes"))
         {
-            print_children();
+            bounding();
         }
     }
     void Copy(string sourceDir, string targetDir, string folder_name)
@@ -113,9 +115,9 @@ public class DogeTools : EditorWindow
         infile.Close();
         AssetDatabase.Refresh();
     }
-    void print_children()
+    void bounding()
     {
-        float tempXcenter;
+        float tempXcenter; // Lot of this is dumb and i should being using vectors or soemthing
         float tempYcenter;
         float tempZcenter;
         float tempXextent;
@@ -127,7 +129,7 @@ public class DogeTools : EditorWindow
 
         foreach (Transform Child in Parent.transform)
         {
-            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null) //first pass to center boxes and get the greatest size in x y z
             {
                 tempXcenter = Math.Abs(Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.center.x);
                 tempYcenter = Math.Abs(Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.center.y);
@@ -153,15 +155,28 @@ public class DogeTools : EditorWindow
 
         foreach (Transform Child in Parent.transform)
         {
-            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null) //second pass to set all to greatest size in x y z
             {
                 Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds = new Bounds(new Vector3(0, 0, 0), new Vector3(greatestX, greatestY, greatestZ));
                 Debug.Log(Child.name);
             }
         }
-        Transform Hips = Parent.transform;
-        foreach (Transform Child in Parent.transform)
+        Transform Hips = Parent.transform; //Set anchor override to hips this assumes armature is first child 
+        if (Anchor != null)
         {
+            foreach (Transform Child in Parent.transform)
+                {
+                if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+                {
+                    Child.gameObject.GetComponent<SkinnedMeshRenderer>().probeAnchor = Anchor;
+                }
+            }
+
+        }
+
+        else foreach (Transform Child in Parent.transform)
+        {
+           
             if (Child.name == "Armature")
             {
                 foreach (Transform subChild in Child.transform)
