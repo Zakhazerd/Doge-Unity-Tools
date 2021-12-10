@@ -8,8 +8,9 @@ public class DogeTools : EditorWindow
     AnimationClip my_variable;
     string tmp;
     DefaultAsset my_file;
-    GameObject Parent;
+    Transform Parent;
     Transform Anchor;
+    bool searchAll;
 
   
 
@@ -23,31 +24,38 @@ public class DogeTools : EditorWindow
         GUILayout.Label("Append to animation herichy", EditorStyles.boldLabel);
         tmp = EditorGUILayout.TextField("Hierchy string to append", tmp);
         my_variable = EditorGUILayout.ObjectField("Animation clip", my_variable, typeof(AnimationClip), false) as AnimationClip;
-
+        EditorGUI.BeginDisabledGroup(my_variable == null);
         if (GUILayout.Button("Append"))
         {
             Reheirchy();
         }
+        EditorGUI.EndDisabledGroup();
         GUILayout.Label("Copy all from folder to current open in project", EditorStyles.boldLabel);
         my_file = (DefaultAsset)EditorGUILayout.ObjectField("Folder", my_file, typeof(DefaultAsset), false);
-        if (my_file != null) { 
-        if (my_file.name == "Assets")
-        {
-            EditorGUILayout.HelpBox("Bruh just don't", MessageType.Warning, true);
-        }
-    }
+        EditorGUI.BeginDisabledGroup(my_file == null);
         if (GUILayout.Button("Copy"))
         {
             Copy_move();
         }
+        EditorGUI.EndDisabledGroup();
         GUILayout.Label("Normalize and set anchors", EditorStyles.boldLabel);
         Anchor = EditorGUILayout.ObjectField("Anchor", Anchor, typeof(Transform), true) as Transform;
-        Parent = EditorGUILayout.ObjectField("Avatar", Parent, typeof(GameObject), true) as GameObject;
-
+        EditorGUI.BeginChangeCheck();
+        Parent = EditorGUILayout.ObjectField("Avatar", Parent, typeof(Transform), true) as Transform;
+        if (EditorGUI.EndChangeCheck() && Parent != null)
+        {
+            SetAnchor();
+        }
+        searchAll = EditorGUILayout.Toggle("Search Entire Heirchy", searchAll);
+        EditorGUI.BeginDisabledGroup(Parent == null || Anchor == null);
         if (GUILayout.Button("Fix skinned meshes"))
         {
+            if (searchAll)
+            RecurisveBounding(Parent);
+            else
             bounding();
         }
+        EditorGUI.EndDisabledGroup();
     }
     void Copy(string sourceDir, string targetDir, string folder_name)
     {
@@ -137,7 +145,7 @@ public class DogeTools : EditorWindow
                 tempXextent = Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.extents.x;
                 tempYextent = Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.extents.y;
                 tempZextent = Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.extents.z;
-              
+
                 tempXextent = (tempXcenter + tempXextent) * 2;
                 tempYextent = (tempYcenter + tempYextent) * 2;
                 tempZextent = (tempZcenter + tempZextent) * 2;
@@ -146,10 +154,6 @@ public class DogeTools : EditorWindow
                 if (tempYextent > greatestY) greatestY = tempYextent;
                 if (tempZextent > greatestZ) greatestZ = tempZextent;
 
-
-
-                Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds = new Bounds(new Vector3(0, 0, 0), new Vector3 (tempXextent, tempYextent, tempZextent));
-                Debug.Log(Child.name);
             }
         }
 
@@ -161,11 +165,10 @@ public class DogeTools : EditorWindow
                 Debug.Log(Child.name);
             }
         }
-        Transform Hips = Parent.transform; //Set anchor override to hips this assumes armature is first child 
         if (Anchor != null)
         {
             foreach (Transform Child in Parent.transform)
-                {
+            {
                 if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
                 {
                     Child.gameObject.GetComponent<SkinnedMeshRenderer>().probeAnchor = Anchor;
@@ -173,27 +176,66 @@ public class DogeTools : EditorWindow
             }
 
         }
-
-        else foreach (Transform Child in Parent.transform)
+    }
+    void SetAnchor()
+    {
+        foreach (Transform Child in Parent.transform)
         {
-           
-            if (Child.name == "Armature")
+            if (Child.name.Contains("Armature"))
             {
                 foreach (Transform subChild in Child.transform)
                 {
                     if (subChild.name == "Hips")
                     {
-                        Hips = subChild;
+                        Anchor = subChild;
                         break;
                     }
-                        
+
                 }
-                
+
             }
-            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+        }
+    }
+    void RecurisveBounding(Transform myParent)
+    {
+        Vector3 greatestSize = new Vector3(0,0,0);
+        RecurisveBiggestBox(myParent, ref greatestSize);
+        RecursiveSetMeshes(myParent, greatestSize);
+    }
+    void RecurisveBiggestBox(Transform myParent, ref Vector3 greatestSize)
+    {
+        Vector3 tempCenter;
+        Vector3 tempExtent;
+        foreach (Transform Child in myParent.transform)
+        {
+            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null) //first pass to center boxes and get the greatest size in x y z
             {
-                Child.gameObject.GetComponent<SkinnedMeshRenderer>().probeAnchor = Hips;
+                tempCenter.x = Math.Abs(Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.center.x);
+                tempCenter.y = Math.Abs(Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.center.y);
+                tempCenter.z = Math.Abs(Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.center.z);
+                tempExtent.x = Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.extents.x;
+                tempExtent.y = Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.extents.y;
+                tempExtent.z = Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds.extents.z;
+
+                tempExtent = (tempExtent + tempCenter) * 2;
+
+                if (tempExtent.x > greatestSize.x) greatestSize.x = tempExtent.x;
+                if (tempExtent.y > greatestSize.y) greatestSize.y = tempExtent.y;
+                if (tempExtent.z > greatestSize.z) greatestSize.z = tempExtent.z;
             }
+            RecurisveBiggestBox(Child, ref greatestSize);
+        }
+    }
+    void RecursiveSetMeshes(Transform myParent, Vector3 greatestSize)
+    {
+        foreach (Transform Child in myParent.transform)
+        {
+            if (Child.gameObject.GetComponent<SkinnedMeshRenderer>() != null) //second pass to set all to greatest size in x y z
+            {
+                Child.gameObject.GetComponent<SkinnedMeshRenderer>().localBounds = new Bounds(new Vector3(0, 0, 0), greatestSize);
+                Child.gameObject.GetComponent<SkinnedMeshRenderer>().probeAnchor = Anchor;
+            }
+            RecursiveSetMeshes(Child, greatestSize);
         }
     }
 }
