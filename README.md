@@ -18,6 +18,11 @@ This takes the selected folder in the tool and copies the contents to the curren
 Normalize and set anchor:
 This will unify your bounding boxes to the same size aswell as set the anchor override to all be the same.
 
-Anchor is any transform in your hierchy if left blank will auto to hips.
-Avatar put the top most object of your avatar the first children will all be checked for skinned meshes
-NOTE anthing above armature will not have their anchor override set if it left armature. Anthing below will be set to hips.
+"Anchor" is any transform in your hierchy if left blank will auto to hips when avatar is added.
+"Avatar" put the top most object of your avatar the first children will all be checked for skinned meshes.
+If "Search for all meshes" is checked will search entire heirchy for for both skinned meshes and regular meshes.
+
+
+Set Fx Layer Weights to 1:
+Will take the animator from Fx Layer in the VRC Avatar Descriptor and set the weigts of all layers to 1.
+Excludes Hai's GCE layers.
