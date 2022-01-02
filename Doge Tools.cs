@@ -130,6 +130,10 @@ public class DogeTools : EditorWindow
         {
             MakeAnimation();
         }
+        if (toggleObjects[0] != null || animationName != null && Parent == null)
+        {
+            EditorGUILayout.HelpBox("Avatar needs to be set", MessageType.Warning);
+        }
         EditorGUI.EndDisabledGroup();
         EditorGUILayout.EndScrollView();
 
