@@ -26,3 +26,14 @@ If "Search for all meshes" is checked will search entire heirchy for for both sk
 Set Fx Layer Weights to 1:
 Will take the animator from Fx Layer in the VRC Avatar Descriptor and set the weigts of all layers to 1.
 Excludes Hai's GCE layers.
+
+
+Quick Bool:
+Takes the fx layer from vrc avatar descriptor adds a layer and paramater taken from "Parameter Name" and creates a simple bool back and forth.
+Adds parameter to selected expression parameter menu and creates a new toggle control on selected expression menu.
+All fields + Avatar must be filled in order to use.
+
+Quick Bool Animation:
+Creates 2 frame animation of selected game objects of the opposite of their current active state.
+Places it in current open folder in Project.
+All fields + Avatar must be filled in order to use.
