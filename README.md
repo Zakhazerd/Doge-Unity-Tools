@@ -36,6 +36,12 @@ All fields + Avatar must be filled in order to use.
 
 
 Quick Bool Animation:
-Creates 2 frame animation of selected game objects of the opposite of their current active state.
+Creates animation of selected gameobjects that is opposite of their checked active state.
 Places it in current open folder in Project.
 All fields + Avatar must be filled in order to use.
+
+Quick Int:
+Creates animations of each gameobject that is opposite of their checked active state adding the disable of the default object to all other animations.
+Adds all animations to your fx layer and creates transitions between them to make the equivalent of exclusive toggles.
+Adds the according parameter and controls to expression menu and expression parameters.
+Expression Menu, Expression Parameters, Avatar, and at least one object must be filled in order to use.
