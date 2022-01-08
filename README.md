@@ -34,4 +34,6 @@ Expression Menu, Expression Parameters, Avatar, and at least one object must be 
 Folder Copy:
 This takes the selected folder in the tool and copies the contents to the current folder open in the project tab and appends the name of the current folder to them.
 
-
+Quick Constrain:
+Adds parent constraint to "Object To Constrain" and add all "Constraint Targets" As sources
+"Constrain and Zero" cause the offset to be zero on the first object. Will always zero to all following objects.
