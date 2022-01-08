@@ -8,6 +8,7 @@ using UnityEditor.Animations;
 using VRC.SDK3.Avatars.ScriptableObjects;
 using DogeHelper;
 using System.Linq;
+using UnityEngine.Animations;
 //using VRC.SDKBase;
 //using VRC.SDK3.Editor;
 //using VRC.SDKBase.Editor;
@@ -18,8 +19,8 @@ using System.Linq;
 //using VRC.SDK3.Validation; //Saving for later just incase
 public class DogeTools : EditorWindow
 {
-    AnimationClip my_variable;
-    string tmp;
+    //AnimationClip my_variable;
+    //string tmp;
     DefaultAsset my_file;
     Transform Parent;
     Transform Anchor;
@@ -35,7 +36,8 @@ public class DogeTools : EditorWindow
     string animationName;
     GameObject[] intObjects = new GameObject[8];
     string qiParameterName;
-
+    GameObject[] constraintTargets = new GameObject[6];
+    GameObject toConstrain;
 
     [MenuItem("Tools/Doge Tools")]
     public static void ShowWindow()
@@ -45,13 +47,15 @@ public class DogeTools : EditorWindow
     private void OnGUI()
     {
         GUILayout.Label("Doge Unity Tools", EditorStyles.boldLabel);
-        GUILayout.Label("Version 1.45 \n",EditorStyles.label);
+        GUILayout.Label("Version 1.5 \n",EditorStyles.miniLabel);
         EditorGUI.BeginChangeCheck();
         Parent = EditorGUILayout.ObjectField("Avatar", Parent, typeof(Transform), true) as Transform;
         if (Parent && !Parent.gameObject.GetComponent<VRCAvatarDescriptor>())
         {
             EditorGUILayout.HelpBox("Avatar missing VRC Avatar Descriptor", MessageType.Warning);
         }
+        avatarExpressionMenu = EditorGUILayout.ObjectField("Expresssion Menu", avatarExpressionMenu, typeof(VRCExpressionsMenu), false) as VRCExpressionsMenu;
+        avatarParameterMenu = EditorGUILayout.ObjectField("Expresssion Parameters", avatarParameterMenu, typeof(VRCExpressionParameters), false) as VRCExpressionParameters;
         if (EditorGUI.EndChangeCheck() && Parent != null)
         {
             Anchor = Bounding.SetAnchor(ref Parent);
@@ -90,12 +94,12 @@ public class DogeTools : EditorWindow
         GUILayout.Label("Quick Bool", EditorStyles.boldLabel);
         qbParameterName = EditorGUILayout.TextField("Parameter Name", qbParameterName);
         qbAnimationClip = EditorGUILayout.ObjectField("Animation Clip", qbAnimationClip, typeof(AnimationClip), false) as AnimationClip;
-        avatarExpressionMenu = EditorGUILayout.ObjectField("Expresssion Menu", avatarExpressionMenu, typeof(VRCExpressionsMenu), false) as VRCExpressionsMenu;
+     //   avatarExpressionMenu = EditorGUILayout.ObjectField("Expresssion Menu", avatarExpressionMenu, typeof(VRCExpressionsMenu), false) as VRCExpressionsMenu;
         if (avatarExpressionMenu != null && avatarExpressionMenu.controls.Count == 8)
         {
             EditorGUILayout.HelpBox("Expression menu already has max of 8 controls", MessageType.Warning);
         }
-        avatarParameterMenu = EditorGUILayout.ObjectField("Expresssion Parameters", avatarParameterMenu, typeof(VRCExpressionParameters), false) as VRCExpressionParameters;
+    //    avatarParameterMenu = EditorGUILayout.ObjectField("Expresssion Parameters", avatarParameterMenu, typeof(VRCExpressionParameters), false) as VRCExpressionParameters;
         EditorGUI.BeginDisabledGroup(Parent == null || qbParameterName == null || qbAnimationClip == null);
         if (GUILayout.Button("Add To Fx Layer"))
         {
@@ -162,7 +166,49 @@ public class DogeTools : EditorWindow
             
 
         }
-        //GUILayout.Label("Append to animation herichy", EditorStyles.boldLabel);
+        GUILayout.Label("Quick Constrain", EditorStyles.boldLabel);
+        constraintTargets[0] = EditorGUILayout.ObjectField("Constraint Targets", constraintTargets[0], typeof(GameObject), true) as GameObject;
+        for (int i = 1; i < constraintTargets.Length; i++)
+        {
+            if (constraintTargets[i - 1] != null)
+            {
+                constraintTargets[i] = EditorGUILayout.ObjectField(" ", constraintTargets[i], typeof(GameObject), true) as GameObject;
+            }
+            else intObjects[i] = null;
+        }
+        toConstrain = EditorGUILayout.ObjectField("Object To Constrain", toConstrain, typeof(GameObject), true) as GameObject;
+        GUILayout.BeginHorizontal();
+        EditorGUI.BeginDisabledGroup(constraintTargets[0] == null || toConstrain == null);
+        if (GUILayout.Button("       Constrain      ")) //I hope this is temporary
+        {
+            if(toConstrain.GetComponent<ParentConstraint>() != null)
+            QuickConstrain.AddConstraint(constraintTargets[0], toConstrain, false);
+            else QuickConstrain.AddToConstraint(constraintTargets[0], toConstrain);
+
+            for (int i = 1; constraintTargets[i] != null; i++)
+            {
+                QuickConstrain.AddToConstraint(constraintTargets[i], toConstrain);
+                
+            }
+            toConstrain.GetComponent<ParentConstraint>().constraintActive = true;
+            toConstrain.GetComponent<ParentConstraint>().locked = true;
+        }
+        if (GUILayout.Button("Constrain and Zero"))
+        {
+            if (toConstrain.GetComponent<ParentConstraint>() != null)
+                QuickConstrain.AddConstraint(constraintTargets[0], toConstrain, true);
+            else QuickConstrain.AddToConstraint(constraintTargets[0], toConstrain);
+            for (int i = 1; constraintTargets[i] != null; i++)
+            {
+                QuickConstrain.AddToConstraint(constraintTargets[i], toConstrain);
+
+            }
+            toConstrain.GetComponent<ParentConstraint>().constraintActive = true;
+            toConstrain.GetComponent<ParentConstraint>().locked = true;
+        }
+        EditorGUI.EndDisabledGroup();
+        GUILayout.EndHorizontal();
+        //GUILayout.Label("Append to animation herichy", EditorStyles.boldLabel); Depricated Function to be redone later
         //tmp = EditorGUILayout.TextField("Hierchy string to append", tmp);
         //my_variable = EditorGUILayout.ObjectField("Animation Clip", my_variable, typeof(AnimationClip), false) as AnimationClip;
         //EditorGUI.BeginDisabledGroup(my_variable == null);
@@ -170,7 +216,7 @@ public class DogeTools : EditorWindow
         //{
         //    Reheirchy();
         //}
-        //EditorGUI.EndDisabledGroup(); Depricated Function to be redone later
+        //EditorGUI.EndDisabledGroup();
 
 
         GUILayout.Label("Copy folder contents to project folder", EditorStyles.boldLabel);
