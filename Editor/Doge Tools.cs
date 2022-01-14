@@ -46,16 +46,10 @@ public class DogeTools : EditorWindow
     }
     private void OnGUI()
     {
-        GUILayout.Label("Doge Unity Tools", EditorStyles.boldLabel);
+         GUILayout.Label("Doge Unity Tools", EditorStyles.boldLabel);
         GUILayout.Label("Version 1.5 \n",EditorStyles.miniLabel);
         EditorGUI.BeginChangeCheck();
         Parent = EditorGUILayout.ObjectField("Avatar", Parent, typeof(Transform), true) as Transform;
-        if (Parent && !Parent.gameObject.GetComponent<VRCAvatarDescriptor>())
-        {
-            EditorGUILayout.HelpBox("Avatar missing VRC Avatar Descriptor", MessageType.Warning);
-        }
-        avatarExpressionMenu = EditorGUILayout.ObjectField("Expresssion Menu", avatarExpressionMenu, typeof(VRCExpressionsMenu), false) as VRCExpressionsMenu;
-        avatarParameterMenu = EditorGUILayout.ObjectField("Expresssion Parameters", avatarParameterMenu, typeof(VRCExpressionParameters), false) as VRCExpressionParameters;
         if (EditorGUI.EndChangeCheck() && Parent != null)
         {
             Anchor = Bounding.SetAnchor(ref Parent);
@@ -63,6 +57,12 @@ public class DogeTools : EditorWindow
             avatarExpressionMenu = Avatar.expressionsMenu;
             avatarParameterMenu = Avatar.expressionParameters;
         }
+        if (Parent && !Parent.gameObject.GetComponent<VRCAvatarDescriptor>())
+        {
+            EditorGUILayout.HelpBox("Avatar missing VRC Avatar Descriptor", MessageType.Warning);
+        }
+        avatarExpressionMenu = EditorGUILayout.ObjectField("Expresssion Menu", avatarExpressionMenu, typeof(VRCExpressionsMenu), false) as VRCExpressionsMenu;
+        avatarParameterMenu = EditorGUILayout.ObjectField("Expresssion Parameters", avatarParameterMenu, typeof(VRCExpressionParameters), false) as VRCExpressionParameters;
         DogeHelpers.DrawLine();
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
        
@@ -122,7 +122,7 @@ public class DogeTools : EditorWindow
             }
             else toggleObjects[i] = null;
         }
-        EditorGUI.BeginDisabledGroup(Parent == null || toggleObjects[0] == null || animationName == null);
+        EditorGUI.BeginDisabledGroup(Parent == null || toggleObjects[0] == null || animationName == null || animationName == "");
         if (GUILayout.Button("Make Animation"))
         {
             qbAnimationClip = QuickBools.MakeAnimation(animationName, toggleObjects, Parent);
