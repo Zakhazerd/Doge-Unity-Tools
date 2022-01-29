@@ -113,7 +113,7 @@ public class DogeTools : EditorWindow
 
         GUILayout.Label("Quick Bool Animation", EditorStyles.boldLabel);
         animationName = EditorGUILayout.TextField("Animation Name", animationName);
-        toggleObjects[0] = EditorGUILayout.ObjectField("Object " + "1",toggleObjects[0],typeof(GameObject),true) as GameObject;
+        toggleObjects[0] = EditorGUILayout.ObjectField("Object 1",toggleObjects[0],typeof(GameObject),true) as GameObject;
         for(int i = 1; i < toggleObjects.Length;i++)
         {
             if (toggleObjects[i - 1] != null)
@@ -174,7 +174,7 @@ public class DogeTools : EditorWindow
             {
                 constraintTargets[i] = EditorGUILayout.ObjectField(" ", constraintTargets[i], typeof(GameObject), true) as GameObject;
             }
-            else intObjects[i] = null;
+            else constraintTargets[i] = null;
         }
         toConstrain = EditorGUILayout.ObjectField("Object To Constrain", toConstrain, typeof(GameObject), true) as GameObject;
         GUILayout.BeginHorizontal();
