@@ -46,16 +46,10 @@ public class DogeTools : EditorWindow
     }
     private void OnGUI()
     {
-        GUILayout.Label("Doge Unity Tools", EditorStyles.boldLabel);
+         GUILayout.Label("Doge Unity Tools", EditorStyles.boldLabel);
         GUILayout.Label("Version 1.5 \n",EditorStyles.miniLabel);
         EditorGUI.BeginChangeCheck();
         Parent = EditorGUILayout.ObjectField("Avatar", Parent, typeof(Transform), true) as Transform;
-        if (Parent && !Parent.gameObject.GetComponent<VRCAvatarDescriptor>())
-        {
-            EditorGUILayout.HelpBox("Avatar missing VRC Avatar Descriptor", MessageType.Warning);
-        }
-        avatarExpressionMenu = EditorGUILayout.ObjectField("Expresssion Menu", avatarExpressionMenu, typeof(VRCExpressionsMenu), false) as VRCExpressionsMenu;
-        avatarParameterMenu = EditorGUILayout.ObjectField("Expresssion Parameters", avatarParameterMenu, typeof(VRCExpressionParameters), false) as VRCExpressionParameters;
         if (EditorGUI.EndChangeCheck() && Parent != null)
         {
             Anchor = Bounding.SetAnchor(ref Parent);
@@ -63,6 +57,12 @@ public class DogeTools : EditorWindow
             avatarExpressionMenu = Avatar.expressionsMenu;
             avatarParameterMenu = Avatar.expressionParameters;
         }
+        if (Parent && !Parent.gameObject.GetComponent<VRCAvatarDescriptor>())
+        {
+            EditorGUILayout.HelpBox("Avatar missing VRC Avatar Descriptor", MessageType.Warning);
+        }
+        avatarExpressionMenu = EditorGUILayout.ObjectField("Expresssion Menu", avatarExpressionMenu, typeof(VRCExpressionsMenu), false) as VRCExpressionsMenu;
+        avatarParameterMenu = EditorGUILayout.ObjectField("Expresssion Parameters", avatarParameterMenu, typeof(VRCExpressionParameters), false) as VRCExpressionParameters;
         DogeHelpers.DrawLine();
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
        
@@ -113,7 +113,7 @@ public class DogeTools : EditorWindow
 
         GUILayout.Label("Quick Bool Animation", EditorStyles.boldLabel);
         animationName = EditorGUILayout.TextField("Animation Name", animationName);
-        toggleObjects[0] = EditorGUILayout.ObjectField("Object " + "1",toggleObjects[0],typeof(GameObject),true) as GameObject;
+        toggleObjects[0] = EditorGUILayout.ObjectField("Object 1",toggleObjects[0],typeof(GameObject),true) as GameObject;
         for(int i = 1; i < toggleObjects.Length;i++)
         {
             if (toggleObjects[i - 1] != null)
@@ -122,7 +122,7 @@ public class DogeTools : EditorWindow
             }
             else toggleObjects[i] = null;
         }
-        EditorGUI.BeginDisabledGroup(Parent == null || toggleObjects[0] == null || animationName == null);
+        EditorGUI.BeginDisabledGroup(Parent == null || toggleObjects[0] == null || animationName == null || animationName == "");
         if (GUILayout.Button("Make Animation"))
         {
             qbAnimationClip = QuickBools.MakeAnimation(animationName, toggleObjects, Parent);
@@ -174,7 +174,7 @@ public class DogeTools : EditorWindow
             {
                 constraintTargets[i] = EditorGUILayout.ObjectField(" ", constraintTargets[i], typeof(GameObject), true) as GameObject;
             }
-            else intObjects[i] = null;
+            else constraintTargets[i] = null;
         }
         toConstrain = EditorGUILayout.ObjectField("Object To Constrain", toConstrain, typeof(GameObject), true) as GameObject;
         GUILayout.BeginHorizontal();
