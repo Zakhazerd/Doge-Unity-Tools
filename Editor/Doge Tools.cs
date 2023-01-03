@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Reflection;
@@ -9,14 +9,7 @@ using VRC.SDK3.Avatars.ScriptableObjects;
 using DogeHelper;
 using System.Linq;
 using UnityEngine.Animations;
-//using VRC.SDKBase;
-//using VRC.SDK3.Editor;
-//using VRC.SDKBase.Editor;
-//using VRC.SDKBase.Editor.BuildPipeline;
-//using VRC.SDKBase.Validation.Performance;
-//using VRC.SDKBase.Validation;
-//using VRC.SDKBase.Validation.Performance.Stats;
-//using VRC.SDK3.Validation; //Saving for later just incase
+
 public class DogeTools : EditorWindow
 {
     //AnimationClip my_variable;
@@ -46,8 +39,8 @@ public class DogeTools : EditorWindow
     }
     private void OnGUI()
     {
-         GUILayout.Label("Doge Unity Tools", EditorStyles.boldLabel);
-        GUILayout.Label("Version 1.5 \n",EditorStyles.miniLabel);
+        GUILayout.Label("Doge Unity Tools", EditorStyles.boldLabel);
+        GUILayout.Label("Version 1.52 \n",EditorStyles.miniLabel);
         EditorGUI.BeginChangeCheck();
         Parent = EditorGUILayout.ObjectField("Avatar", Parent, typeof(Transform), true) as Transform;
         if (EditorGUI.EndChangeCheck() && Parent != null)
@@ -89,7 +82,16 @@ public class DogeTools : EditorWindow
            fxLayer = DogeHelpers.SetLayerWeights(fxLayer);
         }
         EditorGUI.EndDisabledGroup();
+        
+        EditorGUI.BeginDisabledGroup(Parent == null);
 
+        if (GUILayout.Button("Fix Layer Continuity"))
+        {
+            DogeHelpers.GetFxLayer(Parent, ref fxLayer);
+            fxLayer = DogeHelpers.FixLayerCont(fxLayer);
+
+        }
+        EditorGUI.EndDisabledGroup();
 
         GUILayout.Label("Quick Bool", EditorStyles.boldLabel);
         qbParameterName = EditorGUILayout.TextField("Parameter Name", qbParameterName);
@@ -185,7 +187,7 @@ public class DogeTools : EditorWindow
             QuickConstrain.AddConstraint(constraintTargets[0], toConstrain, false);
             else QuickConstrain.AddToConstraint(constraintTargets[0], toConstrain);
 
-            for (int i = 1; constraintTargets[i] != null; i++)
+            for (int i = 1; constraintTargets[i] == null; i++)
             {
                 QuickConstrain.AddToConstraint(constraintTargets[i], toConstrain);
                 
@@ -195,7 +197,7 @@ public class DogeTools : EditorWindow
         }
         if (GUILayout.Button("Constrain and Zero"))
         {
-            if (toConstrain.GetComponent<ParentConstraint>() != null)
+            if (toConstrain.GetComponent<ParentConstraint>() == null)
                 QuickConstrain.AddConstraint(constraintTargets[0], toConstrain, true);
             else QuickConstrain.AddToConstraint(constraintTargets[0], toConstrain);
             for (int i = 1; constraintTargets[i] != null; i++)
