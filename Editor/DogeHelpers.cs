@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using VRC.SDK3.Avatars.Components;
 using UnityEditor.Animations;
@@ -41,7 +41,22 @@ namespace DogeHelper
             object obj = getActiveFolderPath.Invoke(null, new object[0]);
             return obj.ToString();
         }
+        public static AnimatorController FixLayerCont(AnimatorController fxLayer)
+        {
+            for (int i = 0; i < fxLayer.layers.Length; i++)
+            {
+                ChildAnimatorState[] states = fxLayer.layers[i].stateMachine.states;
+                if (states[0].state.name != "Default DT State")
+                    continue;
+                else
+                    for(int j = 0; j < states.Length; j++)
+                    {
+                       VRCAnimatorLayerControl layerControl = (VRCAnimatorLayerControl)states[j].state.behaviours[0];
+                        layerControl.layer = i;
+                    }
+            }
+            return fxLayer;
+        }
     }
 
-    
 }
